@@ -4,12 +4,12 @@ import ENV from 'irene/config/environment';
 import { inject as service } from '@ember/service';
 import { getOwner } from '@ember/application';
 
-
-const b64EncodeUnicode = str =>
-  btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode(`0x${p1}`))
-  )
-  ;
-
+const b64EncodeUnicode = (str) =>
+  btoa(
+    encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) =>
+      String.fromCharCode(`0x${p1}`)
+    )
+  );
 const getB64Token = (user, token) => b64EncodeUnicode(`${user}:${token}`);
 
 const processData = (data) => {
@@ -18,55 +18,72 @@ const processData = (data) => {
 };
 
 const IreneAuthenticator = Base.extend({
-
   ajax: service(),
+  router: service(),
+  window: service('browser/window'),
 
   resumeTransistion() {
-    const authenticatedRoute = getOwner(this).lookup("route:authenticated");
-    const lastTransition = authenticatedRoute.get("lastTransition");
+    const authenticatedRoute = getOwner(this).lookup('route:authenticated');
+    const lastTransition = authenticatedRoute.get('lastTransition');
+
     if (lastTransition) {
       return lastTransition.retry();
     } else {
-      const applicationRoute = getOwner(this).lookup("route:application");
-      return applicationRoute.transitionTo(ENV['ember-simple-auth']["routeAfterAuthentication"]);
+      const applicationRoute = getOwner(this).lookup('route:application');
+      return applicationRoute.transitionTo(
+        ENV['ember-simple-auth']['routeAfterAuthentication']
+      );
+    }
+  },
+
+  async checkAndPerformFrdeskRedirect(username) {
+    const window = this.get('window');
+    const queryParams = this.get('router')?.currentRoute?.queryParams;
+
+    if (queryParams?.next) {
+      const nextRoute = `${queryParams.next}&username=${username}`;
+      window.location = nextRoute;
+
+      return;
     }
   },
 
   async authenticate(identification, password, otp) {
-    const ajax = this.get("ajax");
+    const ajax = this.get('ajax');
     const data = {
       username: identification,
       password,
-      otp
-    }
+      otp,
+    };
     const url = ENV['ember-simple-auth']['loginEndPoint'];
-    return ajax.post(url, { data })
-      .then(data => {
-        data = processData(data);
-        this.resumeTransistion();
-        return data;
-      });
+    return ajax.post(url, { data }).then((data) => {
+      data = processData(data);
+
+      this.checkAndPerformFrdeskRedirect(identification);
+      this.resumeTransistion(identification);
+
+      return data;
+    });
   },
 
   async restore(data) {
-    const ajax = this.get("ajax");
+    const ajax = this.get('ajax');
     const url = ENV['ember-simple-auth']['checkEndPoint'];
     await ajax.post(url, {
       data: {},
       headers: {
-        'Authorization': `Basic ${data.b64token}`
-      }
-    })
+        Authorization: `Basic ${data.b64token}`,
+      },
+    });
     return data;
   },
 
   async invalidate() {
-    const ajax = this.get("ajax");
+    const ajax = this.get('ajax');
     const url = ENV['ember-simple-auth']['logoutEndPoint'];
     await ajax.post(url);
     location.reload();
-  }
+  },
 });
-
 
 export default IreneAuthenticator;
