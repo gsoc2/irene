@@ -62,6 +62,9 @@ module.exports = function (defaults) {
     'ember-date-components': {
       includeCSS: false,
     },
+    'ember-simple-auth': {
+      useSessionSetupMethod: true,
+    }
   });
 
   // Custom hacks to get a similar build in staging and production

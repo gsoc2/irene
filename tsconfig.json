@@ -5,6 +5,7 @@
     // layout, which is not resolvable with the Node resolution algorithm, to
     // work with TypeScript.
     "baseUrl": ".",
+    "verbatimModuleSyntax": false,
     "paths": {
       "irene/tests/*": ["tests/*"],
       "irene/mirage/*": ["mirage/*"],

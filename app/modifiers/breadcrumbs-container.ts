@@ -22,7 +22,7 @@ export default class BreadcrumbsContainerModifier extends Modifier<BreadcrumbsCo
   container: BreadCrumbsContainer | null = null;
 
   constructor(
-    owner: unknown,
+    owner: any,
     args: {
       named: BreadcrumbsContainerModifierSignature['Args']['Named'];
       positional: BreadcrumbsContainerModifierSignature['Args']['Positional'];
