@@ -1,0 +1,37 @@
+<AkTextField
+  @placeholder={{if @placeholder @placeholder 'Type here...'}}
+  value={{@searchQuery}}
+  @textFieldRootClass='ak-text-field-root'
+  ...attributes
+  {{on 'click' this.handleFocusChange}}
+>
+  <:rightAdornment>
+    {{#if @searchQuery}}
+      <AkIconButton {{on 'click' @handleClear}}>
+        <AkIcon @iconName='close' @color='textSecondary' />
+      </AkIconButton>
+    {{/if}}
+  </:rightAdornment>
+</AkTextField>
+
+<AkPopover
+  local-class='ak-autocompete-root'
+  @anchorRef={{this.anchorRef}}
+  @placement='bottom-start'
+  @arrow={{false}}
+  @sameWidthAsRef={{true}}
+  @hasBackdrop={{true}}
+  @onBackdropClick={{this.handleMenuClose}}
+  @renderInPlace={{true}}
+>
+  <div local-class='ak-autocomplete-dropdown-root'>
+    <AkList local-class='ak-autocomplete-dropdown-list' role={{'menu'}}>
+      {{yield
+        (hash
+          listItem=(component 'ak-list/item' button=true role='menuitem')
+          closeMenu=this.handleMenuClose
+        )
+      }}
+    </AkList>
+  </div>
+</AkPopover>
