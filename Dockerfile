@@ -9,7 +9,7 @@ COPY . ./
 RUN npm run deploy:server
 
 
-FROM node:16.18.0-alpine
+FROM node:16.19.1-alpine
 
 LABEL maintainer "Appknox <engineering@appknox.com>"
 
